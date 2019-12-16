@@ -37,10 +37,4 @@ Note that we use stock names not stock symbols when fetching data. You can searc
 
 ```stocks.search_stock("bmw", limit = 3)```
 
-This will print the three most matching stock names for your search:
-
-```BMW AG: bmw
-BMW Vz.: bmw_vz
-BMW Industries Ltd Registered Shs: bmw_industries```
-
-You can increase the limit to 30. If you don't give a parameter, all available data will be printed (up to 30).
+This will print the three most matching stock names for your search. You can increase the limit to 30. If you don't give a parameter, all available data will be printed (up to 30).
