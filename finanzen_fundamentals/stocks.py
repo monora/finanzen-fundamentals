@@ -3,7 +3,7 @@
 
 
 # Import Modules
-from scraper import _make_soup
+from finanzen_fundamentals.scraper import _make_soup
 import re
 
 

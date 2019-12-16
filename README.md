@@ -2,10 +2,13 @@
 Finanzen-Fundamentals is a Python package that can be used to retrieve fundamentals of stocks. The data is fetched from [finanzen.net](https://www.finanzen.net), a German language financial news site. Note that the api is English but all data will be returned in German.
 
 # Installation
-The package will be hosted on PyPi very soon, so that you can install it via pip. If you choose to download the source code, make sure that you have the following dependencies installed:
+You can easily install finanzen-fundamentals via pip: `pip install finanzen-fundamentals`
+
+If you choose to download the source code, make sure that you have the following dependencies installed:
 * requests
 * BeautifulSoup
-You can install both of them by running: `pip install requests BeautifulSoup`.
+* lxml
+You can install all of them by running: `pip install requests BeautifulSoup lxml`.
 
 # Usage
 ## Import
