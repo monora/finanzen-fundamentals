@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 
+import requests
 # Import Modules
 from bs4 import BeautifulSoup
-import requests
 
 
 # Define Function to load Site and convert to BeautifulSoup

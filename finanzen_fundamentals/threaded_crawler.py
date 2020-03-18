@@ -1,10 +1,7 @@
-import os, re, threading
-import requests
-from time import sleep
-from lxml import html
-import string
+import threading
 
-from enum import Enum
+import requests
+from lxml import html
 
 StockMarkets = {
     "BER": {"url_postfix": "@stBoerse_BER", "real_name": "Berlin"},
