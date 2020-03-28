@@ -14,12 +14,12 @@ You can install all of them by running: `pip install requests BeautifulSoup lxml
 ## Import
 After you successfully installed the package, you can include it in your projects by importing it.
 
-```import finanzen_fundamentals```
+```import finanzen_fundamentals.stocks as ff```
 
 ## Retrieve Fundamentals
 You can retrieve the fundamentals of a single stock by running: 
 
-```bmw_fundamentals = get_fundamentals("bmw")```
+```bmw_fundamentals = ff.get_fundamentals("bmw")```
 
 This will fetch the fundamentals of BMW and save it into a dictionary called bmw_fundamentals.
 bmw_fundamentals will have the following keys:
@@ -32,12 +32,12 @@ bmw_fundamentals will have the following keys:
 The values for those keys will be variables, holding a year:value dictionary. If no data can be found, the value will be None.
 You can also fetch estimates for expected values by using:
 
-```bmw_estimates = stocks.get_estimates("bmw")```
+```bmw_estimates = ff.get_estimates("bmw")```
 
 This will save estimates for the most important key metrics if available. The resulting dictionary will hold variable names as keys and a year:value dictionary as values.
 
 Note that we use stock names not stock symbols when fetching data. You can search for stock names by using
 
-```stocks.search_stock("bmw", limit = 3)```
+```ff.search_stock("bmw", limit = 3)```
 
 This will print the three most matching stock names for your search. You can increase the limit to 30. If you don't give a parameter, all available data will be printed (up to 30).
