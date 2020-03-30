@@ -48,7 +48,7 @@ Indices = {
     "OMXS PI": {"index_name": "omxs_pi", "country": "sweden"},
     # eastern europe
     "PX": {"index_name": "px", "country": "czech republic"},
-    "ATHEX 20": {"index_name": "athex_20", "country": "greek" },
+    "ATHEX 20": {"index_name": "athex_20", "country": "greek"},
     "SAX": {"index_name": "sax", "country": "slovakia"},
     "BUX": {"index_name": "bux", "country": "hungary"},
     "WIG 20": {"index_name": "wig_20", "country": "poland"},

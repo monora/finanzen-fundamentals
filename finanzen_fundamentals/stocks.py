@@ -3,10 +3,10 @@
 
 import re
 
+import numpy as np
 import pandas as pd
 import requests
 from lxml import html
-import numpy as np
 
 # Import Modules
 from finanzen_fundamentals.scraper import _make_soup
