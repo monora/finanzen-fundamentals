@@ -6,6 +6,7 @@ import re
 import pandas as pd
 import requests
 from lxml import html
+import numpy as np
 
 # Import Modules
 from finanzen_fundamentals.scraper import _make_soup
@@ -198,77 +199,8 @@ def get_parser(function, stock_name):
     return parser
 
 
-def update_value_lxml(stock: str, resultset):
-    data_columns = [
-        "name",
-        "wkn",
-        "isin",
-        "symbol",
-        "price",
-        "currency",
-        "chg_to_open",
-        "chg_percent",
-        "time",
-        "exchange"
-    ]
-
-    url = "https://www.finanzen.net/aktien/" + self.stock_name + "-aktie" + statics.StockMarkets[self.exchange][
-        'url_postfix']
-    response = requests.get(url, verify=True)
-
-    # sleep()
-    parser = html.fromstring(response.text)
-    summary_table = parser.xpath('//div[contains(@class,"row quotebox")][1]')
-
-    i = 0
-
-    summary_data = []
-
-    for table_data in summary_table:
-        raw_price = table_data.xpath(
-            '//div[contains(@class,"row quotebox")][1]/div[contains(@class, "col-xs-5")]/text()')
-        raw_currency = table_data.xpath(
-            '//div[contains(@class,"row quotebox")][1]/div[contains(@class, "col-xs-5")]/span//text()')
-        raw_change = table_data.xpath(
-            '//div[contains(@class,"row quotebox")][1]/div[contains(@class, "col-xs-4")]/text()')
-        raw_percentage = table_data.xpath(
-            '//div[contains(@class,"row quotebox")][1]/div[contains(@class, "col-xs-3")]/text()')
-        raw_name = table_data.xpath('//div[contains(@class, "col-sm-5")]//h1/text()')
-        raw_instrument_id = table_data.xpath('//span[contains(@class, "instrument-id")]/text()')
-        raw_time = table_data.xpath('//div[contains(@class,"row quotebox")]/div[4]/div[1]/text()')
-        raw_exchange = table_data.xpath('//div[contains(@class,"row quotebox")]/div[4]/div[2]/text()')
-
-        name = ''.join(raw_name).strip()
-        time = ''.join(raw_time).strip()
-        exchange = ''.join(raw_exchange).strip()
-
-        instrument_id = ''.join(raw_instrument_id).strip()
-        (wkn, isin) = instrument_id.split(sep='/')
-        if 'Symbol' in isin:
-            (isin, sym) = isin.split(sep='Symbol')
-        else:
-            sym = ""
-
-        currency = ''.join(raw_currency).strip()
-
-        summary_data = [
-            name.replace('&nbsp', ''),
-            wkn.replace(' ', '').replace("WKN:", ""),
-            isin.replace(' ', '').replace("ISIN:", ""),
-            sym.replace(' ', '').replace(":", ""),
-            float(raw_price[0].replace(',', '.')),
-            currency,
-            float(raw_change[0].replace(',', '.')),
-            float(raw_percentage[0].replace(',', '.')),
-            time,
-            statics.StockMarkets[exchange]['real_name']
-        ]
-
-    self.value = pd.DataFrame(data=[summary_data], columns=data_columns)
-
-
 def get_estimates_lxml(stock: str, results=[]):
-    url = "https://www.finanzen.net/schaetzungen/" + self.stock_name
+    url = "https://www.finanzen.net/schaetzungen/" + stock
 
     xp_base_xpath = '//div[contains(@class, "box table-quotes")]//h1[contains(text(), "Schätzungen")]//..'
     xp_data = xp_base_xpath + '//table//tr'
@@ -300,11 +232,11 @@ def get_estimates_lxml(stock: str, results=[]):
         dataframe.columns = dataframe.iloc[0]
         dataframe.drop(dataframe.index[0], inplace=True)
 
-    self.estimates = dataframe
+    return dataframe
 
 
 def get_fundamentals_lxml(stock: str, results=[]):
-    url = "https://www.finanzen.net/bilanz_guv/" + self.stock_name
+    url = "https://www.finanzen.net/bilanz_guv/" + stock
 
     tables = ["Die Aktie",
               "Unternehmenskennzahlen",
@@ -316,7 +248,7 @@ def get_fundamentals_lxml(stock: str, results=[]):
     complete_data_set = []
 
     for table in tables:
-        parser = helpers.get_parser("fundamentals", self.stock_name)
+        parser = get_parser("fundamentals", stock)
 
         xp_base = '//div[contains(@class, "box table-quotes")]//h2[contains(text(), "' + table + '")]//..'
         xp_head = xp_base + '//table//thead//tr'
@@ -353,7 +285,7 @@ def get_fundamentals_lxml(stock: str, results=[]):
 
             complete_data_set.append(dataframe)
 
-    self.fundamentals = pd.concat(complete_data_set, ignore_index=True)
+    return pd.concat(complete_data_set, ignore_index=True)
 
 
 def get_current_value_lxml(stock: str, exchange="TGT", results=[]):
