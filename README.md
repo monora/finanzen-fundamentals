@@ -8,7 +8,9 @@ If you choose to download the source code, make sure that you have the following
 * requests
 * BeautifulSoup
 * lxml
-You can install all of them by running: `pip install requests BeautifulSoup lxml`.
+* pandas
+* numpy
+You can install all of them by running: `pip install requests BeautifulSoup lxml pandas numpy`.
 
 # Usage
 ## Import
@@ -41,3 +43,26 @@ Note that we use stock names not stock symbols when fetching data. You can searc
 ```ff.search_stock("bmw", limit = 3)```
 
 This will print the three most matching stock names for your search. You can increase the limit to 30. If you don't give a parameter, all available data will be printed (up to 30).
+
+## Alternative Implementation
+Thanks to the contribution of [backster82](https://github.com/backster82), there is also a xml based alternative to the preceeding functions. All of the following functions will return a Pandas DataFrame instead of a dictionary.
+
+You can obtain fundamentals like so:
+
+```bmw_fundamentals = ff.get_fundamentals_lxml("bmw")```
+
+Estimates can be loaded via:
+
+```bmw_estimates = ff.get_estimates_lxml("bmw")```
+
+Additionally, you can also load the current stock price for a vast selection of stock exchanges. For example, you can retrieve the current stock prices for BMW by using the following line of code:
+
+```bmw_price = ff.get_current_value_lxml("bmw")```
+
+This will give you the current price at Tradegate. However, you can change the stock exchange by entering its symbol for the "exchange" argument. If you want to obtain the current price of BMW stocks at the Frankfurt Stock Exchange, you can use the following command:
+
+```bmw_price_frankfurt = ff.get_current_value_lxml("bmw", exchange = "FSE")```
+
+You can find all available exchanges by inspecting the StockMarkets dictionary in `finanzen_fundamentals.statics`.
+
+
