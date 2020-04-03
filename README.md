@@ -10,6 +10,7 @@ If you choose to download the source code, make sure that you have the following
 * lxml
 * pandas
 * numpy
+
 You can install all of them by running: `pip install requests BeautifulSoup lxml pandas numpy`.
 
 # Usage
