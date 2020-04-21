@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import re
 
+# Import Modules
+import re
 import numpy as np
 import pandas as pd
 import requests
 from lxml import html
-
-# Import Modules
 from finanzen_fundamentals.scraper import _make_soup
 from . import statics
 
@@ -24,7 +23,12 @@ def _check_site(soup):
 
 
 # Define Function to Extract GuV/Bilanz from finanzen.net
-def get_fundamentals(stock: str):
+def get_fundamentals(stock: str, output = "dataframe"):
+    
+    # Parse User Input
+    if output not in ["dataframe", "dict"]:
+        raise ValueError("Please choose either 'dict' or 'dataframe' for input")
+    
     # Convert name to lowercase
     stock = stock.lower()
 
@@ -38,7 +42,7 @@ def get_fundamentals(stock: str):
     def _parse_table(soup, signaler: str):
         table_dict = {}
         table = soup.find("h2", text=re.compile(signaler)).parent
-        years = [x.get_text() for x in table.find_all("th")[2:]]
+        years = [int(x.get_text()) for x in table.find_all("th")[2:]]
         rows = table.find_all("tr")[1:]
         for row in rows:
             name = row.find("td", {"class": "font-bold"}).get_text()
@@ -90,8 +94,21 @@ def get_fundamentals(stock: str):
         "Other": other_info
     }
 
-    # Return Fundamentals
-    return fundamentals
+    # Return Fundamentals if output is set to dict
+    if output == "dict":
+        return fundamentals
+    else:
+        df_list = []
+        for f in fundamentals:
+            for i in fundamentals[f]:
+                df_tmp = pd.DataFrame({"Category": f, "Metric": i, 
+                                       "Year": list(fundamentals[f][i].keys()),
+                                       "Value": list(fundamentals[f][i].values())
+                                      })
+                df_list.append(df_tmp)
+        fundamentals_df = pd.concat(df_list)
+        return fundamentals_df
+                
 
 
 # Define Function to Extract Estimates
