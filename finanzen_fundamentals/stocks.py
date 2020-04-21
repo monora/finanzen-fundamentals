@@ -112,7 +112,12 @@ def get_fundamentals(stock: str, output = "dataframe"):
 
 
 # Define Function to Extract Estimates
-def get_estimates(stock: str):
+def get_estimates(stock: str, output = "dataframe"):
+    
+    # Check Input
+    if output not in ["dataframe", "dict"]:
+        raise ValueError("Please choose either 'dict' or 'dataframe' for input")
+    
     # Convert Stock Name to Lowercase
     stock = stock.lower()
 
@@ -139,8 +144,18 @@ def get_estimates(stock: str):
         row_data = [float(x) if x is not None else x for x in row_data]
         table_dict[name] = dict(zip(years, row_data))
 
-    # Return Estimates in Dict
-    return table_dict
+    # Return Estimates
+    if output == "dict":
+        return table_dict
+    else:
+        df_list = []
+        for f in table_dict:
+            df_tmp = pd.DataFrame({"Metric": f, 
+                                   "Year": list(table_dict[f].keys()), 
+                                   "Value": list(table_dict[f].values())
+                                  })
+            df_list.append(df_tmp)
+        return pd.concat(df_list)
 
 
 # Define Function to Search for Stocks
