@@ -24,20 +24,25 @@ You can retrieve the fundamentals of a single stock by running:
 
 ```bmw_fundamentals = ff.get_fundamentals("bmw")```
 
-This will fetch the fundamentals of BMW and save it into a dictionary called bmw_fundamentals.
-bmw_fundamentals will have the following keys:
+This will fetch the fundamentals of BMW and save it into a Pandas DataFrame called bmw_fundamentals.
+The data is split into the following categories:
 * Quotes
 * Key Ratios
 * Income Statement
 * Balance Sheet
 * Other
 
-The values for those keys will be variables, holding a year:value dictionary. If no data can be found, the value will be None.
+Optionally, you can add the argument `output = "dict"`. Instead of a Pandas DataFrame, you will receive a dictionary. Every category will hold another dictionary.
+
+```bmw_fundamentals = ff.get_fundamentals("bmw", output = "dict")```
+
 You can also fetch estimates for expected values by using:
 
 ```bmw_estimates = ff.get_estimates("bmw")```
 
-This will save estimates for the most important key metrics if available. The resulting dictionary will hold variable names as keys and a year:value dictionary as values.
+Again, the data will be saved as a Pandas DataFrame. If you want to receive the data as a dictionary, you could use `output = "dict"` again.
+
+```bmw_estimates = ff.get_estimates("bmw", output = "dict")```
 
 Note that we use stock names not stock symbols when fetching data. You can search for stock names by using
 
@@ -46,7 +51,7 @@ Note that we use stock names not stock symbols when fetching data. You can searc
 This will print the three most matching stock names for your search. You can increase the limit to 30. If you don't give a parameter, all available data will be printed (up to 30).
 
 ## Alternative Implementation
-Thanks to the contribution of [backster82](https://github.com/backster82), there is also a xml based alternative to the preceeding functions. All of the following functions will return a Pandas DataFrame instead of a dictionary.
+Thanks to the contribution of [backster82](https://github.com/backster82), there is also a xml based alternative to the preceeding functions. All of the following functions will return a Pandas DataFrame. Note that get_fundamentals and get_estimates now incorporates the functionallity of the alternative implementation. Hence, you will receive deprecation warning upon using these functions.
 
 You can obtain fundamentals like so:
 

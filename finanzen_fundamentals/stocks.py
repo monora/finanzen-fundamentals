@@ -7,9 +7,14 @@ import re
 import numpy as np
 import pandas as pd
 import requests
+import warnings
 from lxml import html
 from finanzen_fundamentals.scraper import _make_soup
 from . import statics
+
+
+# Adjust Warnings Settings
+warnings.simplefilter('once')
 
 
 # Define Function to Check for Error
@@ -232,6 +237,12 @@ def get_parser(function, stock_name):
 
 
 def get_estimates_lxml(stock: str, results=[]):
+    
+    # Raise DeprecationWarning
+    warnings.warn("get_estimates_lxml() functionality now included in get_estimates().", 
+                  DeprecationWarning)
+    
+    
     url = "https://www.finanzen.net/schaetzungen/" + stock
 
     xp_base_xpath = '//div[contains(@class, "box table-quotes")]//h1[contains(text(), "Schätzungen")]//..'
@@ -268,6 +279,11 @@ def get_estimates_lxml(stock: str, results=[]):
 
 
 def get_fundamentals_lxml(stock: str, results=[]):
+    
+    # Raise DepreciationWarning
+    warnings.warn("get_fundamentals_lxml() functionality now included in get_fundamentals().", 
+                  DeprecationWarning)
+    
     url = "https://www.finanzen.net/bilanz_guv/" + stock
 
     tables = ["Die Aktie",
