@@ -396,7 +396,7 @@ def get_current_value_lxml(stock: str, exchange="TGT", results=[]):
             sym.replace(' ', '').replace(":", ""),
             float(raw_price[0].replace(',', '.')),
             currency,
-            float(raw_change[0].replace(',', '.')),
+            float(raw_change[0].replace(',', '.').replace("±","")),
             float(raw_percentage[0].replace(',', '.')),
             time,
             statics.StockMarkets[exchange]['real_name']
