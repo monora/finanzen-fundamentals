@@ -178,7 +178,8 @@ def search_stock(stock: str, limit: int = -1):
 
     # Define Function to Extract Results
     result_list = []
-    table = soup.find("table", {"class": "table"})
+    table_outer_div = soup.find("div", {"class": "table-responsive"})
+    table = table_outer_div.find("table", {"class": "table"})
     rows = table.find_all("tr")
     for row in rows[1:]:
         cells = row.find_all("td")
@@ -196,10 +197,12 @@ def search_stock(stock: str, limit: int = -1):
         result_list = result_list[0:limit]
 
     # Return Result List as formatted String
+    names = []
     for result in result_list:
         result_name = result[0]
         result_short = re.search("aktien/(.+)-aktie", result[1]).group(1)
-        print("{}: {}".format(result_name, result_short))
+        names.append([result_name, result_short])
+    return names
 
 
 ### backster82 additional functions
