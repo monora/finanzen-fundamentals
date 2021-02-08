@@ -11,7 +11,7 @@ setuptools.setup(
     description="API to fetch stock data fundamentals from finanzen.net",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/Jhruzik/Finanzen-Fundamentals",
+    url="https://github.com/robert-elles/finanzen-fundamentals",
     packages=setuptools.find_packages(),
     install_requires=["requests", "bs4", "lxml", "numpy", "pandas"],
     classifiers=[
