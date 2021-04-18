@@ -104,7 +104,7 @@ def get_fundamentals(stock: str, output="dataframe"):
         df_list = []
         for f in fundamentals:
             for i in fundamentals[f]:
-                df_tmp = pd.DataFrame({**{"Category": f, "Metric": i}, **fundamentals[f][i]})
+                df_tmp = pd.DataFrame([{**{"Category": f, "Metric": i}, **fundamentals[f][i]}])
                 df_list.append(df_tmp)
         fundamentals_df = pd.concat(df_list)
         return fundamentals_df
