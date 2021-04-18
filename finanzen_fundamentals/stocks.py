@@ -148,10 +148,7 @@ def get_estimates(stock: str, output="dataframe"):
     else:
         df_list = []
         for f in table_dict:
-            df_tmp = pd.DataFrame({"Metric": f,
-                                   "Year": list(table_dict[f].keys()),
-                                   "Value": list(table_dict[f].values())
-                                   })
+            df_tmp = pd.DataFrame([{**{"Metric": f}, **table_dict[f]}])
             df_list.append(df_tmp)
         return pd.concat(df_list)
 
