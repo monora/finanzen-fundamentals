@@ -12,7 +12,6 @@ from lxml import html
 from finanzen_fundamentals.scraper import _make_soup
 from . import statics
 
-
 # Adjust Warnings Settings
 warnings.simplefilter('once')
 
@@ -28,12 +27,11 @@ def _check_site(soup):
 
 
 # Define Function to Extract GuV/Bilanz from finanzen.net
-def get_fundamentals(stock: str, output = "dataframe"):
-    
+def get_fundamentals(stock: str, output="dataframe"):
     # Parse User Input
     if output not in ["dataframe", "dict"]:
         raise ValueError("Please choose either 'dict' or 'dataframe' for input")
-    
+
     # Convert name to lowercase
     stock = stock.lower()
 
@@ -113,16 +111,14 @@ def get_fundamentals(stock: str, output = "dataframe"):
                 df_list.append(df_tmp)
         fundamentals_df = pd.concat(df_list)
         return fundamentals_df
-                
 
 
 # Define Function to Extract Estimates
-def get_estimates(stock: str, output = "dataframe"):
-    
+def get_estimates(stock: str, output="dataframe"):
     # Check Input
     if output not in ["dataframe", "dict"]:
         raise ValueError("Please choose either 'dict' or 'dataframe' for input")
-    
+
     # Convert Stock Name to Lowercase
     stock = stock.lower()
 
@@ -155,10 +151,10 @@ def get_estimates(stock: str, output = "dataframe"):
     else:
         df_list = []
         for f in table_dict:
-            df_tmp = pd.DataFrame({"Metric": f, 
-                                   "Year": list(table_dict[f].keys()), 
+            df_tmp = pd.DataFrame({"Metric": f,
+                                   "Year": list(table_dict[f].keys()),
                                    "Value": list(table_dict[f].values())
-                                  })
+                                   })
             df_list.append(df_tmp)
         return pd.concat(df_list)
 
@@ -203,12 +199,11 @@ def search_stock(stock: str, limit: int = -1):
     for result in result_list:
         stock_name = result[0]
         short_name = re.search("aktien/(.+)-aktie", result[1]).group(1)
-        names.append({ 'name': stock_name, 'short_name': short_name, 'isin': result[2], 'wkn': result[3]})
+        names.append({'name': stock_name, 'short_name': short_name, 'isin': result[2], 'wkn': result[3]})
     return names
 
 
-### backster82 additional functions
-
+# backster82 additional functions
 def check_site_availability(url):
     try:
         r = requests.get(url)
@@ -229,7 +224,6 @@ def get_parser(function, stock_name):
 
     if function not in functions:
         raise ValueError("Got unknown function %r in get_parser" % function)
-        return 1
 
     check_site_availability(base_url)
 
@@ -241,13 +235,13 @@ def get_parser(function, stock_name):
     return parser
 
 
-def get_estimates_lxml(stock: str, results=[]):
-    
+def get_estimates_lxml(stock: str, results=None):
     # Raise DeprecationWarning
-    warnings.warn("get_estimates_lxml() functionality now included in get_estimates().", 
+    if results is None:
+        results = []
+    warnings.warn("get_estimates_lxml() functionality now included in get_estimates().",
                   DeprecationWarning)
-    
-    
+
     url = "https://www.finanzen.net/schaetzungen/" + stock
 
     xp_base_xpath = '//div[contains(@class, "box table-quotes")]//h1[contains(text(), "Schätzungen")]//..'
@@ -283,12 +277,13 @@ def get_estimates_lxml(stock: str, results=[]):
     return dataframe
 
 
-def get_fundamentals_lxml(stock: str, results=[]):
-    
+def get_fundamentals_lxml(stock: str, results=None):
     # Raise DepreciationWarning
-    warnings.warn("get_fundamentals_lxml() functionality now included in get_fundamentals().", 
+    if results is None:
+        results = []
+    warnings.warn("get_fundamentals_lxml() functionality now included in get_fundamentals().",
                   DeprecationWarning)
-    
+
     url = "https://www.finanzen.net/bilanz_guv/" + stock
 
     tables = ["Die Aktie",
@@ -401,8 +396,8 @@ def get_current_value_lxml(stock: str, exchange="TGT", results=[]):
             sym.replace(' ', '').replace(":", ""),
             float(raw_price[0].replace(',', '.')),
             currency,
-            float(raw_change[0].replace(',', '.').replace("±","")),
-            float(raw_percentage[0].replace(',', '.').replace("±","")),
+            float(raw_change[0].replace(',', '.').replace("±", "")),
+            float(raw_percentage[0].replace(',', '.').replace("±", "")),
             time,
             statics.StockMarkets[exchange]['real_name']
         ]
