@@ -48,7 +48,7 @@ Note that we use stock names not stock symbols when fetching data. You can searc
 
 ```ff.search_stock("bmw", limit = 3)```
 
-This will print the three most matching stock names for your search. You can increase the limit to 30. If you don't give a parameter, all available data will be printed (up to 30).
+This will return the three most matching stock names for your search. You can increase the limit to 30. If you don't give a parameter, all available data will be returned (up to 30).
 
 ## Alternative Implementation
 Thanks to the contribution of [backster82](https://github.com/backster82), there is also a xml based alternative to the preceeding functions. All of the following functions will return a Pandas DataFrame. Note that get_fundamentals and get_estimates now incorporates the functionallity of the alternative implementation. Hence, you will receive deprecation warning upon using these functions.
