@@ -4,11 +4,13 @@
 
 # Import Modules
 import re
+import warnings
+
 import numpy as np
 import pandas as pd
 import requests
-import warnings
 from lxml import html
+
 from finanzen_fundamentals.scraper import _make_soup
 from . import statics
 
@@ -148,7 +150,7 @@ def get_estimates(stock: str, output="dataframe"):
     else:
         df_list = []
         for f in table_dict:
-            df_tmp = pd.DataFrame([{**{"Metric": f}, **table_dict[f]}])
+            df_tmp = pd.DataFrame([{**{"Estimate Metric": f}, **table_dict[f]}])
             df_list.append(df_tmp)
         return pd.concat(df_list)
 
