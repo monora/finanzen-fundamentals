@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/robert-elles/finanzen-fundamentals",
     packages=setuptools.find_packages(),
-    install_requires=["requests", "bs4", "lxml", "numpy", "pandas"],
+    install_requires=["requests", "bs4", "lxml", "numpy", "pandas", "cchardet"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

@@ -5,6 +5,7 @@
 import requests
 # Import Modules
 from bs4 import BeautifulSoup
+import cchardet
 
 
 # Define Function to load Site and convert to BeautifulSoup
