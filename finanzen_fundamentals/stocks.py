@@ -27,6 +27,11 @@ def _check_site(soup):
         if load_error in message_text:
             raise ValueError("Could not find Stock")
 
+def tryParseFloat(str):
+    try:
+        return float(str)
+    except Exception:
+        return str
 
 # Define Function to Extract GuV/Bilanz from finanzen.net
 def get_fundamentals(stock: str, output="dataframe"):
@@ -56,7 +61,7 @@ def get_fundamentals(stock: str, output="dataframe"):
             row_data = [x.get_text() for x in row_data]
             row_data = [re.sub(r"\.", "", x) for x in row_data]
             row_data = [re.sub(",", ".", x) for x in row_data]
-            row_data = [float(x) if x != "-" else None for x in row_data]
+            row_data = [tryParseFloat(x) if x != "-" else None for x in row_data]
             table_dict[name] = dict(zip(years, row_data))
         return table_dict
 
@@ -105,9 +110,10 @@ def get_fundamentals(stock: str, output="dataframe"):
     else:
         df_list = []
         for f in fundamentals:
-            for i in fundamentals[f]:
-                df_tmp = pd.DataFrame([{**{"Category": f, "Metric": i}, **fundamentals[f][i]}])
-                df_list.append(df_tmp)
+            if fundamentals[f] is not None:
+                for i in fundamentals[f]:
+                    df_tmp = pd.DataFrame([{**{"Category": f, "Metric": i}, **fundamentals[f][i]}])
+                    df_list.append(df_tmp)
         fundamentals_df = pd.concat(df_list)
         return fundamentals_df
 
