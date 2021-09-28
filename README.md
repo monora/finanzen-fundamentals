@@ -51,10 +51,15 @@ Note that we use stock names not stock symbols when fetching data. You can searc
 This will return the three most matching stock names for your search. You can increase the limit to 30. If you don't give a parameter, all available data will be returned (up to 30).
 
 ## Retrive ETF Information
-You can get ETF Infos as dict by calling 
+You can get ETF Infos as Python dictionary by first importing the etf module:
+
 ```import finanzen_fundamentals.etfs as etf```
-After that you can get ETF data by inserting the String after "/etf/".
-```mcsi_world = etf.get_etf_info("amundi-index...")```
+
+Afterwards, you can get ETF data by giving the name to the get_etf_info function.
+
+```mcsi_world = etf.get_etf_info("ishares-msci-world-etf-ie00b0m62q58")```
+
+Note that the name can be looked up using the finanzen_fundamentals.stocks.search_stock function.
 
 ## Alternative Implementation
 Thanks to the contribution of [backster82](https://github.com/backster82), there is also a xml based alternative to the preceeding functions. All of the following functions will return a Pandas DataFrame. Note that get_fundamentals and get_estimates now incorporates the functionallity of the alternative implementation. Hence, you will receive deprecation warning upon using these functions.
