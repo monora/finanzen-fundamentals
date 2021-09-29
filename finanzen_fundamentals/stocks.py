@@ -28,7 +28,7 @@ def _check_site(soup):
 
 
 # Define Function to Extract GuV/Bilanz from finanzen.net
-def get_fundamentals(stock: str, output = "dataframe"):
+def get_fundamentals(stock: str, output: str = "dataframe"):
     
     # Parse User Input
     if output not in ["dataframe", "dict"]:
@@ -56,7 +56,7 @@ def get_fundamentals(stock: str, output = "dataframe"):
             row_data = [x.get_text() for x in row_data]
             row_data = [re.sub(r"\.", "", x) for x in row_data]
             row_data = [re.sub(",", ".", x) for x in row_data]
-            row_data = [float(x) if x != "-" else None for x in row_data]
+            row_data = [float(x) if x not in ["-", "< 0 *"] else None for x in row_data]
             table_dict[name] = dict(zip(years, row_data))
         return table_dict
 
@@ -117,7 +117,7 @@ def get_fundamentals(stock: str, output = "dataframe"):
 
 
 # Define Function to Extract Estimates
-def get_estimates(stock: str, output = "dataframe"):
+def get_estimates(stock: str, output: str = "dataframe"):
     
     # Check Input
     if output not in ["dataframe", "dict"]:
@@ -144,7 +144,7 @@ def get_estimates(stock: str, output = "dataframe"):
         name = fields[0]
         row_data = fields[1:]
         row_data = [x if x != "-" else None for x in row_data]
-        row_data = [re.sub("[^\d,]", "", x) if x is not None else x for x in row_data]
+        row_data = [re.sub(r"[^\d,]", "", x) if x is not None else x for x in row_data]
         row_data = [re.sub(",", ".", x) if x is not None else x for x in row_data]
         row_data = [float(x) if x is not None else x for x in row_data]
         table_dict[name] = dict(zip(years, row_data))
