@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 
-import requests
 # Import Modules
+import requests
 from bs4 import BeautifulSoup
 
 

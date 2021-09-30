@@ -3,15 +3,22 @@
 
 
 # Import Modules
+import pandas as pd
 from finanzen_fundamentals.scraper import _make_soup
+from finanzen_fundamentals.search import search
 
 
 # Define Function to Extract ETF Data
-def get_etf_info(etf: str, output="dict"):
+def get_info(etf: str, output: str = "dataframe"):
     
-    # Parse User Input
-    if output not in ["dict"]:
-        raise ValueError("Only 'dict' supportet for now")
+    # Transform User Input to Small Letters
+    etf = etf.lower()
+    output = output.lower()
+    
+    # Check User Input
+    output_allowed = ["dataframe", "dict"]
+    if output not in output_allowed:
+        raise ValueError("Output must be either one of: {}".format(", ".join(output_allowed)))
     
     # Load Data
     soup = _make_soup("https://www.finanzen.net/etf/" + etf)
@@ -44,6 +51,25 @@ def get_etf_info(etf: str, output="dict"):
         "FondsSize": baseDataFondsSize
     }
     
+    # Create Result
+    if output == "dataframe":
+        for i in info:
+            list_tmp = []
+            list_tmp.append(info[i])
+            info[i] = list_tmp
+        result = pd.DataFrame(info)
+    elif output == "dict":
+        result = info
+        
     # Return Result
-    if output == "dict":
-        return info
+    return result
+    
+    
+# Define Function to Search ETF
+def search_etf(etf: str, limit: int = -1):
+    
+    # Get Search Result
+    result = search(term=etf, category="etf", limit=limit)
+    
+    # Return Result
+    return result
