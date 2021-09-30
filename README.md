@@ -60,11 +60,11 @@ You can get ETF infos as a Pandas DataFrame or a Python dictionary by first impo
 
 Afterwards, you can get ETF data by giving the name of the ETF to the get_info function. Note that you could also use "dict" as a value for the output argument. This would return the result as a dictionary.
 
-```mcsi_world = etf.get_info("ishares-msci-world-etf-ie00b0m62q58")```
+```msci_world = etfs.get_info("ishares-msci-world-etf-ie00b0m62q58")```
 
 Again, we use internal short names for ETFs. You can search these names by running:
 
-```etf.search_etf("iShares", limit=3)```
+```etfs.search_etf("iShares", limit=3)```
 
 ## Alternative Implementation
 Thanks to the contribution of [backster82](https://github.com/backster82), there is also a xml based alternative to the preceeding functions. All of the following functions will return a Pandas DataFrame. Note that get_fundamentals and get_estimates now incorporates the functionallity of the alternative implementation. Hence, you will receive deprecation warning upon using these functions.
