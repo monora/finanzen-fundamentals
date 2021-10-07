@@ -3,14 +3,23 @@
 
 
 # Import Modules
+## Built ins
 import re
+from datetime import datetime
+import warnings
+
+## Data Structures
 import numpy as np
 import pandas as pd
+
+## Web Scraping
 import requests
-import warnings
 from lxml import html
+
+## Finanzen-Fundamentals
 from finanzen_fundamentals.scraper import _make_soup
 from finanzen_fundamentals.search import search
+from finanzen_fundamentals.exceptions import NoDataException, ParsingException
 import finanzen_fundamentals.statics as statics
 
 
@@ -25,7 +34,7 @@ def _check_site(soup):
         message_text = message.get_text()
         load_error = "Die gewünschte Seite konnte nicht angezeigt werden"
         if load_error in message_text:
-            raise ValueError("Could not find Stock")
+            raise NoDataException("Could not find Stock")
 
 
 # Define Function to Extract GuV/Bilanz from finanzen.net
@@ -116,7 +125,6 @@ def get_fundamentals(stock: str, output: str = "dataframe"):
         return fundamentals_df
                 
 
-
 # Define Function to Extract Estimates
 def get_estimates(stock: str, output: str = "dataframe"):
     
@@ -162,6 +170,71 @@ def get_estimates(stock: str, output: str = "dataframe"):
                                   })
             df_list.append(df_tmp)
         return pd.concat(df_list)
+    
+    
+# Define Function to Get Current Price
+def get_price(stock: str, exchange: str = "FSE", output: str = "dataframe"):
+    
+    # Transform User Input
+    output = output.lower()
+    stock = stock.lower()
+    exchange = exchange.upper()
+    
+    # Check User Input
+    exchanges_allowed = ["BER", "BMN", "DUS", "FSE", "HAM", "HAN", "MUN",
+                         "XETRA", "STU", "TGT", "XQTX", "BAE", "NASO"]
+    if exchange not in exchanges_allowed:
+        exchanges_str = ", ".join(exchanges_allowed)
+        raise ValueError("'exchange' must be either one of: " + exchanges_str)
+        
+    if output not in ["dict", "dataframe"]:
+        raise ValueError("Output should be either 'dict' or 'dataframe'")
+    
+    # Create URL
+    url = f"https://www.finanzen.net/aktien/{stock}@stBoerse_{exchange}"
+    
+    # Make Soup
+    soup = _make_soup(url)
+    
+    # Get Quotebox
+    quotebox = soup.find("div", {"class": "quotebox"})
+    
+    # Return if no Data
+    if quotebox is None:
+        raise NoDataException("No price available")
+    
+    # Get Current Price
+    price = quotebox.find("div", {"class": "col-xs-5"}).get_text()
+    price = re.search(r"([\d,]+)(\D+)", price)
+    price_float = float(price.group(1).replace(",", "."))
+    currency = price.group(2)
+    
+    # Get Timestamp
+    timestamp = quotebox.find("div", {"class": "quotebox-time"}).get_text()
+    if ":" in timestamp: 
+        now = datetime.now()
+        timestamp = datetime.strptime(timestamp, "%H:%M:%S")
+        timestamp = timestamp.replace(year=now.year, month=now.month, day=now.day)
+    elif "." in timestamp:
+        timestamp = datetime.strptime(timestamp, "%d.%m.%Y")
+    else:
+        raise ParsingException("Can not parse timestamp")
+    
+    # Create Result Dict
+    result = {
+        "price": price_float,
+        "currency": currency,
+        "timestamp": timestamp,
+        "stock": stock,
+        "exchange": exchange
+        }
+    
+    # Convert to Pandas if wanted
+    if output == "dataframe":
+        result = pd.DataFrame([result])
+    
+    # Return Result
+    return result
 
 
 # Define Function to Search for Stocks
@@ -309,6 +382,11 @@ def get_fundamentals_lxml(stock: str, results=[]):
 
 
 def get_current_value_lxml(stock: str, exchange="TGT", results=[]):
+    
+    # Raise DepreciationWarning
+    warnings.warn("get_current_value_lxml() functionality now included in get_price().", 
+                  DeprecationWarning)
+    
     data_columns = [
         "name",
         "wkn",
