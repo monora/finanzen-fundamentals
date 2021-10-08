@@ -1,3 +1,7 @@
+# Define List of Exchanges
+exchanges = ["BER", "BMN", "DUS", "FSE", "HAM", "HAN", "MUN",
+             "XETRA", "STU", "TGT", "XQTX", "BAE", "NASO"]
+
 # global list of Stockmarkets on finanzen.net their url components and real names
 StockMarkets = {
     "BER": {"url_postfix": "@stBoerse_BER", "real_name": "Berlin"},

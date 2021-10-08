@@ -5,7 +5,6 @@
 # Import Modules
 ## Built ins
 import re
-from datetime import datetime
 import warnings
 
 ## Data Structures
@@ -19,7 +18,8 @@ from lxml import html
 ## Finanzen-Fundamentals
 from finanzen_fundamentals.scraper import _make_soup
 from finanzen_fundamentals.search import search
-from finanzen_fundamentals.exceptions import NoDataException, ParsingException
+from finanzen_fundamentals.exceptions import NoDataException
+from finanzen_fundamentals.functions import parse_price, parse_timestamp
 import finanzen_fundamentals.statics as statics
 
 
@@ -181,10 +181,8 @@ def get_price(stock: str, exchange: str = "FSE", output: str = "dataframe"):
     exchange = exchange.upper()
     
     # Check User Input
-    exchanges_allowed = ["BER", "BMN", "DUS", "FSE", "HAM", "HAN", "MUN",
-                         "XETRA", "STU", "TGT", "XQTX", "BAE", "NASO"]
-    if exchange not in exchanges_allowed:
-        exchanges_str = ", ".join(exchanges_allowed)
+    if exchange not in statics.exchanges:
+        exchanges_str = ", ".join(statics.exchanges)
         raise ValueError("'exchange' must be either one of: " + exchanges_str)
         
     if output not in ["dict", "dataframe"]:
@@ -205,20 +203,11 @@ def get_price(stock: str, exchange: str = "FSE", output: str = "dataframe"):
     
     # Get Current Price
     price = quotebox.find("div", {"class": "col-xs-5"}).get_text()
-    price = re.search(r"([\d,]+)(\D+)", price)
-    price_float = float(price.group(1).replace(",", "."))
-    currency = price.group(2)
+    price_float, currency = parse_price(price)
     
     # Get Timestamp
     timestamp = quotebox.find("div", {"class": "quotebox-time"}).get_text()
-    if ":" in timestamp: 
-        now = datetime.now()
-        timestamp = datetime.strptime(timestamp, "%H:%M:%S")
-        timestamp = timestamp.replace(year=now.year, month=now.month, day=now.day)
-    elif "." in timestamp:
-        timestamp = datetime.strptime(timestamp, "%d.%m.%Y")
-    else:
-        raise ParsingException("Can not parse timestamp")
+    timestamp = parse_timestamp(timestamp)
     
     # Create Result Dict
     result = {
