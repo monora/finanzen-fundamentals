@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="finanzen-fundamentals", # Replace with your own username
-    version="0.2.1",
+    version="0.2.2",
     author="Joshua Hruzik",
     author_email="joshua.hruzik@gmail.com",
     description="API to fetch stock data fundamentals from finanzen.net",
