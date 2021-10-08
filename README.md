@@ -102,6 +102,15 @@ Alternatively, you could get the current price as a dictionary like this:
 bmw_price = stocks.get_price(stock="bmw-aktie", exchange="FSE", output="dict")
 ```
 
+If you want to extract prices for ETFs, you can use the get_price function inside the ETF module like so.
+
+```
+import finanzen_fundamentals.etfs as etfs
+ishare_price = etfs.get_price(etf="ishares-core-msci-world-etf-ie00b4l5y983")
+```
+
+Just as with stocks, you can specify the exchange and output format.
+
 ## Alternative Implementation
 Thanks to the contribution of [backster82](https://github.com/backster82), there is also a xml based alternative to the preceeding functions. All of the following functions will return a Pandas DataFrame. Note that get_fundamentals and get_estimates now incorporates the functionallity of the alternative implementation. Hence, you will receive deprecation warning upon using these functions.
 
