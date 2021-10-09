@@ -1,4 +1,4 @@
-Copyright (c) 2019 Joshua Hruzik
+Copyright (c) 2021 Joshua Hruzik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,5 +20,6 @@ SOFTWARE.
 
 Finanzen-Fundamentals incorporates code from the beautifulsoup4 library, which is
 also made available under the MIT license. 2004-2015 Leonard Richardson.
-Also, the library requests is used which is licensed under 
-Apache License, Version 2. 2019. 
+Also, the library requests is used which is licensed under
+Apache License, Version 2. 2019.
+Pandas is made available under the  BSD 3-Clause License.

@@ -1,15 +1,16 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# Make Imports
+## Built Ins
+from datetime import datetime
 
-# Import Modules
 ## Data Structures
 import pandas as pd
 
 ## Finanzen-Fundamentals
 from finanzen_fundamentals.exceptions import NoDataException
 from finanzen_fundamentals.scraper import _make_soup
-from finanzen_fundamentals.functions import parse_price, parse_timestamp
+from finanzen_fundamentals.functions import parse_price, parse_timestamp, parse_percentage
 from finanzen_fundamentals.search import search
 import finanzen_fundamentals.statics as statics
 
@@ -30,44 +31,108 @@ def get_info(etf: str, output: str = "dataframe"):
     soup = _make_soup("https://www.finanzen.net/etf/" + etf)
     
     # Find WKN and ISIN
-    WKN = soup.find("span", text="WKN:").next_sibling.strip()
-    ISIN = soup.find("span", text="ISIN:").next_sibling.strip()
-    
-    # Find Current Prices
-    currentStockTable = soup.find("div", class_="table-responsive quotebox").table
-    currentStockPrice = float(currentStockTable.tr.td.contents[0].replace(",","."))
-    currentStockCurrency = currentStockTable.tr.td.span.contents[0]
-    currentStockExchange = currentStockTable.find("div", class_="quotebox-time").find_next_sibling("div").next_element.strip()
-    
+    try:
+        wkn = soup.find("span", text="WKN:").next_sibling.strip()
+    except Exception:
+        wkn = None
+    try:
+        isin = soup.find("span", text="ISIN:").next_sibling.strip()
+    except Exception:
+        isin = None
+
     # Find Fundamentals
-    baseDataTable = soup.find("h2", text="Wichtige Stammdaten").parent
-    baseDataIssuer = baseDataTable.find("div", text="Emittent").parent.a.text
-    baseDataBenchmark = baseDataTable.find("div", text="Benchmark").parent.find("div", {"title": True}).text
-    baseDataFondsSize = float(baseDataTable.find("div", text="Fondsgröße").parent.find("div", {"title": True}).text.replace(".","").replace(",","."))
+    ## Find Base Table
+    table_base = soup.find("div", {"id": "EtfBaseDataContent"})
     
-    # Put Result into Dictionary
-    info = {
-        "currentStockPrice": currentStockPrice,
-        "currentStockCurrency": currentStockCurrency,
-        "currentStockExchange": currentStockExchange,
-        "WKN": WKN,
-        "ISIN": ISIN,
-        "Issuer": baseDataIssuer,
-        "Benchmark": baseDataBenchmark,
-        "FondsSize": baseDataFondsSize
+    ## Define Function to Extract Value
+    def get_value(table, text: str):
+        value = table_base.find("div", text=text)\
+            .findNext("div")\
+            .get_text()\
+            .strip()
+        return value
+    
+    ## Extract Rows
+    issuer = get_value(table_base, "Emittent")
+    date_issue = get_value(table_base, "Auflagedatum")
+    category = get_value(table_base, "Kategorie")
+    currency = get_value(table_base, "Fondswährung")
+    benchmark = get_value(table_base, "Benchmark")
+    distribution = get_value(table_base, "Ausschüttungsart")
+    expense_ratio = get_value(table_base, "Total Expense Ratio (TER)")
+    volume = get_value(table_base, "Fondsgröße")
+    replication = get_value(table_base, "Replikationsart ")
+    
+    ## Clean Values
+    ### Issuer
+    if issuer in ["", "-"]:
+        issuer = None
+
+    ### Issue Date
+    if date_issue not in ["", "-"]:
+        date_issue = datetime.strptime(date_issue, "%d.%m.%Y")
+    else:
+        date_issue = None
+        
+    ### Category
+    if category in ["", "-"]:
+        category = None
+        
+    ### Currency
+    if currency in ["", "-"]:
+        currency = None
+        
+    ### Benchmark
+    if benchmark in ["", "-"]:
+        benchmark = None
+        
+    ### Distribution
+    if distribution in ["", "-"]:
+        distribution = None
+    
+    ### Total Expense Ratio
+    if expense_ratio not in ["", "-"]:
+        try:
+            expense_ratio = parse_percentage(expense_ratio)
+        except Exception:
+            expense_ratio = None
+    else:
+        expense_ratio = None
+        
+    ### Volume
+    if volume not in ["", "-"]:
+        try:
+            volume = float(volume.replace(".", "").replace(",", "."))
+        except Exception:
+            volume = None
+    else:
+        volume = None
+        
+    ### Replication
+    if replication in ["", "-"]:
+        replication = None
+    
+    ## Put Result into Dictionary
+    result = {
+        "ETF": etf,
+        "WKN": wkn,
+        "ISIN": isin,
+        "Issuer": issuer,
+        "Issue Date": date_issue,
+        "Category": category,
+        "Currency": currency,
+        "Benchmark": benchmark,
+        "Distribution": distribution,
+        "Expense Ratio": expense_ratio,
+        "Volume": volume,
+        "Replication": replication
     }
     
-    # Create Result
+    ## Convert to Pandas DataFrame
     if output == "dataframe":
-        for i in info:
-            list_tmp = []
-            list_tmp.append(info[i])
-            info[i] = list_tmp
-        result = pd.DataFrame(info)
-    elif output == "dict":
-        result = info
+        result = pd.DataFrame([result])
         
-    # Return Result
+    ## Return Result
     return result
 
 
@@ -104,20 +169,24 @@ def get_price(etf: str, exchange: str = "FSE", output: str = "dataframe"):
         quotebox = quotebox.find("tr")
 
     # Extract Current Price
-    price = quotebox.find("td").get_text()
+    try:
+        price = quotebox.find("td").get_text()
+    except Exception:
+        raise NoDataException("No price available")
+        
     price_float, currency = parse_price(price)
     
     # Get Timestamp
-    timestamp = quotebox.find("div", {"class": "quotebox-time"}).get_text().strip()
-    timestamp = parse_timestamp(timestamp)
+    timestamp_str = quotebox.find("div", {"class": "quotebox-time"}).get_text().strip()
+    timestamp = parse_timestamp(timestamp_str)
     
     # Create Result Dict
     result = {
-        "price": price_float,
-        "currency": currency,
-        "timestamp": timestamp,
-        "etf": etf,
-        "exchange": exchange
+        "Price": price_float,
+        "Currency": currency,
+        "Timestamp": timestamp,
+        "ETF": etf,
+        "Exchange": exchange
         }
     
     # Convert to Pandas if wanted

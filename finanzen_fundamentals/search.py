@@ -71,15 +71,15 @@ def search(term: str, category: str, limit: int = -1):
         if category == "stock":
             isin = _get_cell(cells, 1)
             wkn = _get_cell(cells, 2)
-            result_list.append({"name": name, "short_name": short_name,
-                                "link": link, "isin": isin, "wkn": wkn})
+            result_list.append({"Name": name, "Stock": short_name,
+                                "Link": link, "ISIN": isin, "WKN": wkn})
             
         ### Extract Special Data for Index Data
         elif category == "index":
             symbol = _get_cell(cells, 1)
             wkn = _get_cell(cells, 2)
-            result_list.append({"name": name, "short_name": short_name,
-                                "link": link, "symbol": symbol, "wkn": wkn})
+            result_list.append({"Name": name, "Index": short_name,
+                                "Link": link, "Symbol": symbol, "WKN": wkn})
             
         ### Extract Special Data for Funds
         elif category == "fund":
@@ -87,17 +87,17 @@ def search(term: str, category: str, limit: int = -1):
             instrument = _get_cell(cells, 2)
             isin = _get_cell(cells, 3)
             wkn = _get_cell(cells, 4)
-            result_list.append({"name": name, "short_name": short_name,
-                                "link": link, "manager": manager, 
-                                "instrument": instrument, "isin": isin,
-                                "wkn": wkn})
+            result_list.append({"Name": name, "Fund": short_name,
+                                "Link": link, "Manager": manager, 
+                                "Instrument": instrument, "ISIN": isin,
+                                "WKN": wkn})
             
         ### Extract Special Data for ETFs
         elif category == "etf":
             isin = _get_cell(cells, 1)
             wkn = _get_cell(cells, 2)
-            result_list.append({"name": name, "short_name": short_name,
-                                "link": link, "isin": isin, "wkn": wkn})
+            result_list.append({"Name": name, "ETF": short_name,
+                                "Link": link, "ISIN": isin, "WKN": wkn})
             
         ### Extract Special Data for Certificates
         elif category == "certificate":
@@ -106,10 +106,10 @@ def search(term: str, category: str, limit: int = -1):
             runtime = _get_cell(cells, 3)
             isin = _get_cell(cells, 4)
             wkn = _get_cell(cells, 5)
-            result_list.append({"name": name, "short_name": short_name,
-                                "link": link, "issuer": issuer, 
-                                "product": product, "runtime": runtime, 
-                                "isin": isin, "wkn": wkn})
+            result_list.append({"Name": name, "Certificate": short_name,
+                                "Link": link, "Issuer": issuer, 
+                                "Product": product, "Run Time": runtime, 
+                                "ISIN": isin, "WKN": wkn})
             
         ### Extract Special Data for Bonds
         elif category == "bond":
@@ -117,9 +117,9 @@ def search(term: str, category: str, limit: int = -1):
             instrument = _get_cell(cells, 2)
             isin = _get_cell(cells, 3)
             wkn = _get_cell(cells, 4)
-            result_list.append({"name": name, "short_name": short_name,
-                               "link": link, "issuer": issuer,
-                               "isin": isin, "wkn": wkn})
+            result_list.append({"Name": name, "Bond": short_name,
+                               "Link": link, "Issuer": issuer,
+                               "ISIN": isin, "WKN": wkn})
 
     # Filter Result if limit was given
     if limit > 0:

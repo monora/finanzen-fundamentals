@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 
 # Import Modules
 ## Built ins
@@ -19,8 +17,8 @@ from lxml import html
 from finanzen_fundamentals.scraper import _make_soup
 from finanzen_fundamentals.search import search
 from finanzen_fundamentals.exceptions import NoDataException
-from finanzen_fundamentals.functions import parse_price, parse_timestamp
 import finanzen_fundamentals.statics as statics
+from finanzen_fundamentals.functions import parse_price, parse_timestamp
 
 
 # Adjust Warnings Settings
@@ -44,8 +42,10 @@ def get_fundamentals(stock: str, output: str = "dataframe"):
     if output not in ["dataframe", "dict"]:
         raise ValueError("Please choose either 'dict' or 'dataframe' for input")
     
-    # Convert name to lowercase
+    # Convert name to lowercase and remove -aktie
     stock = stock.lower()
+    if stock.endswith("-aktie"):
+        stock = re.sub("-aktie$", "", stock)
 
     # Load Data
     soup = _make_soup("https://www.finanzen.net/bilanz_guv/" + stock)
@@ -134,6 +134,8 @@ def get_estimates(stock: str, output: str = "dataframe"):
     
     # Convert Stock Name to Lowercase
     stock = stock.lower()
+    if stock.endswith("-aktie"):
+        stock = re.sub("-aktie$", "", stock)
 
     # Load Data
     soup = _make_soup("https://www.finanzen.net/schaetzungen/" + stock)
@@ -211,11 +213,11 @@ def get_price(stock: str, exchange: str = "FSE", output: str = "dataframe"):
     
     # Create Result Dict
     result = {
-        "price": price_float,
-        "currency": currency,
-        "timestamp": timestamp,
-        "stock": stock,
-        "exchange": exchange
+        "Price": price_float,
+        "Currency": currency,
+        "Timestamp": timestamp,
+        "Stock": stock,
+        "Exchange": exchange
         }
     
     # Convert to Pandas if wanted
