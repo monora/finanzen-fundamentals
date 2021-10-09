@@ -17,19 +17,19 @@ import finanzen_fundamentals.statics as statics
 
 # Define Function to Extract Info
 def get_info(fund: str, output: str = "dataframe"):
-    
+
     # Transform User Input to Small Letters
     fund = fund.lower()
     output = output.lower()
-    
+
     # Check User Input
     output_allowed = ["dataframe", "dict"]
     if output not in output_allowed:
         raise ValueError("Output must be either one of: {}".format(", ".join(output_allowed)))
-    
+
     # Load Data
     soup = _make_soup("https://www.finanzen.net/fonds/" + fund)
-    
+
     # Find WKN and ISIN
     try:
         wkn = soup.find("span", cptxt="WKN")["cpval"]
@@ -39,13 +39,13 @@ def get_info(fund: str, output: str = "dataframe"):
         isin = soup.find("span", cptxt="ISIN")["cpval"]
     except Exception:
         isin = None
-    
+
     # Find Fundamentals
     ## Find Base Table
-    table_base = soup.find("h2", {"class": "box-headline"}, 
+    table_base = soup.find("h2", {"class": "box-headline"},
                            text = "Wichtige Kennzahlen").parent
     table_rows = table_base.find_all("tr")
-    
+
     ## Define Function to Extract Row
     def extract_row(rows, text: str):
         extract = [x for x in rows if x.find("strong", text=text) is not None]
@@ -54,7 +54,7 @@ def get_info(fund: str, output: str = "dataframe"):
         else:
             extract = None
         return extract
-    
+
     ## Extract Rows
     issuer = extract_row(table_rows, "Fondsgesellschaft")
     currency = extract_row(table_rows, "Währung")
@@ -83,7 +83,7 @@ def get_info(fund: str, output: str = "dataframe"):
         .find("td", {"class": "text-right"})\
         .get_text()\
         .strip()
-    
+
     ## Clean Rows
     ### Define Function to Clean Percentages
     def clean_percentage(percentage: str):
@@ -92,31 +92,31 @@ def get_info(fund: str, output: str = "dataframe"):
         except ParsingException:
             percentage = None
         return percentage
-    
+
     ### Issuer
     if issuer in ["-", ""]:
         issuer = None
-        
+
     ### Currency
     if currency in ["-", ""]:
         currency = None
-    
+
     ###  Premiums
     if premium not in ["-", ""]:
         premium = clean_percentage(premium)
     else:
         premium = None
-        
+
     ### Expense Ratio
     if expense_ratio not in ["-", ""]:
         expense_ratio = clean_percentage(expense_ratio)
     else:
         expense_ratio = None
-        
+
     ### Benchmark
     if benchmark in ["-", "", "N/A"]:
         benchmark = None
-        
+
     ### Volume
     if volume not in ["-", ""] and not volume.startswith("0,00"):
         #### Get Currency
@@ -127,61 +127,61 @@ def get_info(fund: str, output: str = "dataframe"):
             multiplier = multiplier_map[multiplier]
         else:
             multiplier = 1
-            
+
         #### Get Numerical Value of Volume
-        volume = re.search("^[\d\,]+", volume).group(0).replace(",", ".")
+        volume = re.search(r"^[\d\,]+", volume).group(0).replace(",", ".")
         volume = round(float(volume) * multiplier, 2)
     else:
         volume = None
-    
+
     ### Distribution
     if distribution in ["-", ""]:
         distribution = None
-        
+
     ### Caputre Ratio Up
     if capture_ratio_up not in ["-", ""]:
         capture_ratio_up = parse_decimal(capture_ratio_up)
     else:
         capture_ratio_up = None
-    
+
     ### Capture Ratio Down
     if capture_ratio_down not in ["-", ""]:
         capture_ratio_down = parse_decimal(capture_ratio_down)
     else:
         capture_ratio_down = None
-        
+
     ### Batting Average
     if batting_average not in ["-", ""]:
         batting_average = parse_percentage(batting_average)
     else:
         batting_average = None
-        
+
     ### Alpha
     if alpha not in ["-", ""]:
         alpha = parse_decimal(alpha)
     else:
         alpha = None
-        
+
     ### Beta
     if beta not in ["-", ""]:
         beta = parse_decimal(beta)
     else:
         beta = None
-        
+
     ### R2
     if r2 not in ["-", ""]:
         r2 = parse_percentage(r2)
     else:
         r2 = None
-        
+
     ### Performance
     if perf_1y not in ["-", ""]:
         perf_1y = parse_percentage(perf_1y)
-        
+
     ### Volatility
     if vola_1y not in ["-", ""]:
         vola_1y = parse_percentage(vola_1y)
-        
+
     ## Create Result Dict
     result = {
         "Fund": fund,
@@ -203,41 +203,41 @@ def get_info(fund: str, output: str = "dataframe"):
         "Beta": beta,
         "R2": r2
         }
-    
+
     ## Convert to Pandas DataFrame
     if output == "dataframe":
         result = pd.DataFrame([result])
-        
+
     ## Return Result
     return result
 
 
 # Define Function to Get Current Price
 def get_price(fund: str, exchange: str = "FSE", output: str = "dataframe"):
-    
+
     # Transform User Input into Small Letters
     fund = fund.lower()
     exchange = exchange.upper()
     output = output.lower()
-     
+
     # Check User Input
     if output not in ["dataframe", "dict"]:
         raise ValueError("output must either be 'dict' or 'dataframe'")
-        
+
     # Check that Exchange is Valid
     if exchange not in statics.exchanges:
         exchanges_str = ", ".join(statics.exchanges)
         raise ValueError("'exchange' must be either one of: " + exchanges_str)
-        
+
     # Create URL
     url = f"https://www.finanzen.net/fonds/{fund}/{exchange}"
-    
+
     # Create Soup
     soup = _make_soup(url)
-    
+
     # Find Quotebox
     quotebox = soup.find("div", {"class": "quotebox"})
-    
+
     # Raise Error if no Price is Available
     if quotebox is None:
         raise NoDataException("No price available")
@@ -249,13 +249,13 @@ def get_price(fund: str, exchange: str = "FSE", output: str = "dataframe"):
         price = price.get_text()
     except Exception:
         raise NoDataException("No price available")
-        
+
     price_float, currency = parse_price(price)
-    
+
     # Get Timestamp
     timestamp_str = quotebox.find("div", {"class": "quotebox-time"}).get_text().strip()
     timestamp = parse_timestamp(timestamp_str)
-    
+
     # Create Result Dict
     result = {
         "Price": price_float,
@@ -264,20 +264,20 @@ def get_price(fund: str, exchange: str = "FSE", output: str = "dataframe"):
         "Fund": fund,
         "Exchange": exchange
         }
-    
+
     # Convert to Pandas if wanted
     if output == "dataframe":
         result = pd.DataFrame([result])
-    
+
     # Return Result
     return result
 
 
 # Search Function
 def search_fund(fund: str, limit: int = -1):
-    
+
     ## Get Search Result
     result = search(term=fund, category="fund", limit=limit)
-    
+
     ## Return Result
     return result
