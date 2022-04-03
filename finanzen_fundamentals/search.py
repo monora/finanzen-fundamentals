@@ -13,7 +13,7 @@ def search(term: str, category: str, limit: int = -1):
     category = category.lower()
     
     # Check Category Argument
-    cat_allowed = ["stock", "index", "fund", "etf", "certificate", "bond", "fx"]
+    cat_allowed = ["stock", "index", "fund", "etf", "certificate", "bond", "fx", "commodity"]
     if category not in cat_allowed:
         raise ValueError("Category must bei either one of: {}".format(", ".join(cat_allowed)))
     
@@ -25,7 +25,8 @@ def search(term: str, category: str, limit: int = -1):
         "etf": "etfs",
         "certificate": "zertifikate",
         "bond": "anleihen",
-        "fx": "devisen"
+        "fx": "devisen",
+        "commodity": "Rohstoffe"
         }
     category_mapped = cat_map[category]
     
@@ -67,21 +68,21 @@ def search(term: str, category: str, limit: int = -1):
         short_name = cells[0].find("a")["href"]
         short_name = re.search("/.+/(.+)$", short_name).group(1)
         
-        ### Extract Special Data for Stocks
+        ### Extract Stock Data
         if category == "stock":
             isin = _get_cell(cells, 1)
             wkn = _get_cell(cells, 2)
             result_list.append({"Name": name, "Stock": short_name,
                                 "Link": link, "ISIN": isin, "WKN": wkn})
             
-        ### Extract Special Data for Index Data
+        ### Extract Index Data
         elif category == "index":
             symbol = _get_cell(cells, 1)
             wkn = _get_cell(cells, 2)
             result_list.append({"Name": name, "Index": short_name,
                                 "Link": link, "Symbol": symbol, "WKN": wkn})
             
-        ### Extract Special Data for Funds
+        ### Extract Fund Data
         elif category == "fund":
             manager = _get_cell(cells, 1)
             instrument = _get_cell(cells, 2)
@@ -92,14 +93,14 @@ def search(term: str, category: str, limit: int = -1):
                                 "Instrument": instrument, "ISIN": isin,
                                 "WKN": wkn})
             
-        ### Extract Special Data for ETFs
+        ### Extract ETF Data
         elif category == "etf":
             isin = _get_cell(cells, 1)
             wkn = _get_cell(cells, 2)
             result_list.append({"Name": name, "ETF": short_name,
                                 "Link": link, "ISIN": isin, "WKN": wkn})
             
-        ### Extract Special Data for Certificates
+        ### Extract Certificate Data
         elif category == "certificate":
             issuer = _get_cell(cells, 1)
             product = _get_cell(cells, 2)
@@ -111,7 +112,7 @@ def search(term: str, category: str, limit: int = -1):
                                 "Product": product, "Run Time": runtime, 
                                 "ISIN": isin, "WKN": wkn})
             
-        ### Extract Special Data for Bonds
+        ### Extract Bond Data
         elif category == "bond":
             issuer = _get_cell(cells, 1)
             instrument = _get_cell(cells, 2)
@@ -120,6 +121,11 @@ def search(term: str, category: str, limit: int = -1):
             result_list.append({"Name": name, "Bond": short_name,
                                "Link": link, "Issuer": issuer,
                                "ISIN": isin, "WKN": wkn})
+
+        ### Extrac Commodity Data
+        elif category == "commodity":
+            result_list.append({"Name": name, "Commodity": short_name,
+                                "Link": link})
 
     # Filter Result if limit was given
     if limit > 0:

@@ -18,42 +18,33 @@ from finanzen_fundamentals.scraper import _make_soup
 from finanzen_fundamentals.search import search
 from finanzen_fundamentals.exceptions import NoDataException
 import finanzen_fundamentals.statics as statics
-from finanzen_fundamentals.functions import parse_price, parse_timestamp
+from finanzen_fundamentals.functions import parse_price, parse_timestamp, check_data
 
 
 # Adjust Warnings Settings
 warnings.simplefilter('once')
 
 
-# Define Function to Check for Error
-def _check_site(soup):
-    message = soup.find("div", {"class": "special_info_box"})
-    if message is not None:
-        message_text = message.get_text()
-        load_error = "Die gewünschte Seite konnte nicht angezeigt werden"
-        if load_error in message_text:
-            raise NoDataException("Could not find Stock")
-
-
 # Define Function to Extract GuV/Bilanz from finanzen.net
 def get_fundamentals(stock: str, output: str = "dataframe"):
     
-    # Parse User Input
+    ## Parse User Input
     if output not in ["dataframe", "dict"]:
         raise ValueError("Please choose either 'dict' or 'dataframe' for input")
     
-    # Convert name to lowercase and remove -aktie
+    ## Convert name to lowercase and remove -aktie
     stock = stock.lower()
     if stock.endswith("-aktie"):
         stock = re.sub("-aktie$", "", stock)
 
-    # Load Data
+    ## Load Data
     soup = _make_soup("https://www.finanzen.net/bilanz_guv/" + stock)
 
-    # Check for Error
-    _check_site(soup)
+    ## Check for Error
+    if not check_data(soup):
+        raise NoDataException("Could not find stock: {}".format(stock))
 
-    # Define Function to Parse Table
+    ## Define Function to Parse Table
     def _parse_table(soup, signaler: str):
         table_dict = {}
         table = soup.find("h2", text=re.compile(signaler)).parent
@@ -70,37 +61,37 @@ def get_fundamentals(stock: str, output: str = "dataframe"):
             table_dict[name] = dict(zip(years, row_data))
         return table_dict
 
-    # Extract Stock Quote Info+
+    ## Extract Stock Quote Info+
     try:
         quote_info = _parse_table(soup, "Die Aktie")
     except Exception:
         quote_info = None
 
-    # Extract Key Ratios
+    ## Extract Key Ratios
     try:
         key_ratios = _parse_table(soup, "Unternehmenskennzahlen")
     except Exception:
         key_ratios = None
 
-    # Extract Income Statement
+    ## Extract Income Statement
     try:
         income_info = _parse_table(soup, "GuV")
     except Exception:
         income_info = None
 
-    # Extract Balance Sheet
+    ## Extract Balance Sheet
     try:
         balance_sheet = _parse_table(soup, "Bilanz")
     except Exception:
         balance_sheet = None
 
-    # Extract Other Information
+    ## Extract Other Information
     try:
         other_info = _parse_table(soup, "sonstige Angaben")
     except Exception:
         other_info = None
 
-    # Collect Fundamentals into single Directory
+    ## Collect Fundamentals into single Directory
     fundamentals = {
         "Quotes": quote_info,
         "Key Ratios": key_ratios,
@@ -109,7 +100,7 @@ def get_fundamentals(stock: str, output: str = "dataframe"):
         "Other": other_info
     }
 
-    # Return Fundamentals if output is set to dict
+    ## Return Fundamentals if output is set to dict
     if output == "dict":
         return fundamentals
     else:
@@ -128,22 +119,23 @@ def get_fundamentals(stock: str, output: str = "dataframe"):
 # Define Function to Extract Estimates
 def get_estimates(stock: str, output: str = "dataframe"):
     
-    # Check Input
+    ## Check Input
     if output not in ["dataframe", "dict"]:
         raise ValueError("Please choose either 'dict' or 'dataframe' for input")
     
-    # Convert Stock Name to Lowercase
+    ## Convert Stock Name to Lowercase
     stock = stock.lower()
     if stock.endswith("-aktie"):
         stock = re.sub("-aktie$", "", stock)
 
-    # Load Data
+    ## Load Data
     soup = _make_soup("https://www.finanzen.net/schaetzungen/" + stock)
 
-    # Check for Error
-    _check_site(soup)
+    ## Check for Error
+    if not check_data(soup):
+        raise NoDataException("Could not find stock: {}".format(stock))
 
-    # Parse Table containing Yearly Estimates
+    ## Parse Table containing Yearly Estimates
     table_dict = {}
     table = soup.find("h1", text=re.compile("^Schätzungen")).parent
     years = table.find_all("th")[1:]
@@ -160,7 +152,7 @@ def get_estimates(stock: str, output: str = "dataframe"):
         row_data = [float(x) if x is not None else x for x in row_data]
         table_dict[name] = dict(zip(years, row_data))
 
-    # Return Estimates
+    ## Return Estimates
     if output == "dict":
         return table_dict
     else:
@@ -174,15 +166,15 @@ def get_estimates(stock: str, output: str = "dataframe"):
         return pd.concat(df_list)
     
     
-# Define Function to Get Current Price
+## Define Function to Get Current Price
 def get_price(stock: str, exchange: str = "FSE", output: str = "dataframe"):
     
-    # Transform User Input
+    ## Transform User Input
     output = output.lower()
     stock = stock.lower()
     exchange = exchange.upper()
     
-    # Check User Input
+    ## Check User Input
     if exchange not in statics.exchanges:
         exchanges_str = ", ".join(statics.exchanges)
         raise ValueError("'exchange' must be either one of: " + exchanges_str)
@@ -190,28 +182,32 @@ def get_price(stock: str, exchange: str = "FSE", output: str = "dataframe"):
     if output not in ["dict", "dataframe"]:
         raise ValueError("Output should be either 'dict' or 'dataframe'")
     
-    # Create URL
+    ## Create URL
     url = f"https://www.finanzen.net/aktien/{stock}@stBoerse_{exchange}"
     
-    # Make Soup
+    ## Make Soup
     soup = _make_soup(url)
+
+    ## Check Data
+    if not check_data(soup):
+        raise NoDataException("Could not find stock: {}".format(stock))
     
-    # Get Quotebox
+    ## Get Quotebox
     quotebox = soup.find("div", {"class": "quotebox"})
     
-    # Return if no Data
+    ## Return if no Data
     if quotebox is None:
         raise NoDataException("No price available")
     
-    # Get Current Price
+    ## Get Current Price
     price = quotebox.find("div", {"class": "col-xs-5"}).get_text()
     price_float, currency = parse_price(price)
     
-    # Get Timestamp
+    ## Get Timestamp
     timestamp = quotebox.find("div", {"class": "quotebox-time"}).get_text()
     timestamp = parse_timestamp(timestamp)
     
-    # Create Result Dict
+    ## Create Result Dict
     result = {
         "Price": price_float,
         "Currency": currency,
@@ -220,21 +216,21 @@ def get_price(stock: str, exchange: str = "FSE", output: str = "dataframe"):
         "Exchange": exchange
         }
     
-    # Convert to Pandas if wanted
+    ## Convert to Pandas if wanted
     if output == "dataframe":
         result = pd.DataFrame([result])
     
-    # Return Result
+    ## Return Result
     return result
 
 
 # Define Function to Search for Stocks
 def search_stock(stock: str, limit: int = -1):
     
-    # Get Search Result
+    ## Get Search Result
     result = search(term=stock, category="stock", limit=limit)
 
-    # Return Result
+    ## Return Result
     return result
 
 

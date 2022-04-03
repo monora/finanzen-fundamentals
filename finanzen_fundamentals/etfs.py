@@ -10,7 +10,7 @@ import pandas as pd
 ## Finanzen-Fundamentals
 from finanzen_fundamentals.exceptions import NoDataException
 from finanzen_fundamentals.scraper import _make_soup
-from finanzen_fundamentals.functions import parse_price, parse_timestamp, parse_percentage
+from finanzen_fundamentals.functions import parse_price, parse_timestamp, parse_percentage, check_data
 from finanzen_fundamentals.search import search
 import finanzen_fundamentals.statics as statics
 
@@ -18,19 +18,23 @@ import finanzen_fundamentals.statics as statics
 # Define Function to Extract ETF Data
 def get_info(etf: str, output: str = "dataframe"):
     
-    # Transform User Input to Small Letters
+    ## Transform User Input to Small Letters
     etf = etf.lower()
     output = output.lower()
     
-    # Check User Input
+    ## Check User Input
     output_allowed = ["dataframe", "dict"]
     if output not in output_allowed:
         raise ValueError("Output must be either one of: {}".format(", ".join(output_allowed)))
     
-    # Load Data
+    ## Load Data
     soup = _make_soup("https://www.finanzen.net/etf/" + etf)
+
+    ## Check for Data
+    if not check_data(soup):
+        raise NoDataException("Could not find ETF: {}".format(etf))
     
-    # Find WKN and ISIN
+    ## Find WKN and ISIN
     try:
         wkn = soup.find("span", text="WKN:").next_sibling.strip()
     except Exception:
@@ -40,11 +44,11 @@ def get_info(etf: str, output: str = "dataframe"):
     except Exception:
         isin = None
 
-    # Find Fundamentals
-    ## Find Base Table
+    ## Find Fundamentals
+    ### Find Base Table
     table_base = soup.find("div", {"id": "EtfBaseDataContent"})
     
-    ## Define Function to Extract Value
+    ### Define Function to Extract Value
     def get_value(table, text: str):
         value = table_base.find("div", text=text)\
             .findNext("div")\
@@ -52,7 +56,7 @@ def get_info(etf: str, output: str = "dataframe"):
             .strip()
         return value
     
-    ## Extract Rows
+    ### Extract Rows
     issuer = get_value(table_base, "Emittent")
     date_issue = get_value(table_base, "Auflagedatum")
     category = get_value(table_base, "Kategorie")
@@ -63,34 +67,34 @@ def get_info(etf: str, output: str = "dataframe"):
     volume = get_value(table_base, "Fondsgröße")
     replication = get_value(table_base, "Replikationsart ")
     
-    ## Clean Values
-    ### Issuer
+    ### Clean Values
+    #### Issuer
     if issuer in ["", "-"]:
         issuer = None
 
-    ### Issue Date
+    #### Issue Date
     if date_issue not in ["", "-"]:
         date_issue = datetime.strptime(date_issue, "%d.%m.%Y")
     else:
         date_issue = None
         
-    ### Category
+    #### Category
     if category in ["", "-"]:
         category = None
         
-    ### Currency
+    #### Currency
     if currency in ["", "-"]:
         currency = None
         
-    ### Benchmark
+    #### Benchmark
     if benchmark in ["", "-"]:
         benchmark = None
         
-    ### Distribution
+    #### Distribution
     if distribution in ["", "-"]:
         distribution = None
     
-    ### Total Expense Ratio
+    #### Total Expense Ratio
     if expense_ratio not in ["", "-"]:
         try:
             expense_ratio = parse_percentage(expense_ratio)
@@ -99,7 +103,7 @@ def get_info(etf: str, output: str = "dataframe"):
     else:
         expense_ratio = None
         
-    ### Volume
+    #### Volume
     if volume not in ["", "-"]:
         try:
             volume = float(volume.replace(".", "").replace(",", "."))
@@ -108,7 +112,7 @@ def get_info(etf: str, output: str = "dataframe"):
     else:
         volume = None
         
-    ### Replication
+    #### Replication
     if replication in ["", "-"]:
         replication = None
     
@@ -139,36 +143,40 @@ def get_info(etf: str, output: str = "dataframe"):
 # Define Function to Get Current Price
 def get_price(etf: str, exchange: str = "FSE", output: str = "dataframe"):
     
-    # Transform User Input into Small Letters
+    ## Transform User Input into Small Letters
     etf = etf.lower()
     exchange = exchange.upper()
     output = output.lower()
     
-    # Check User Input
+    ## Check User Input
     if output not in ["dataframe", "dict"]:
         raise ValueError("output must either be 'dict' or 'dataframe'")
         
-    # Check that Exchange is Valid
+    ## Check that Exchange is Valid
     if exchange not in statics.exchanges:
         exchanges_str = ", ".join(statics.exchanges)
         raise ValueError("'exchange' must be either one of: " + exchanges_str)
         
-    # Create URL
+    ## Create URL
     url = f"https://www.finanzen.net/etf/{etf}/{exchange}"
     
-    # Create Soup
+    ## Create Soup
     soup = _make_soup(url)
+
+    ## Check Data
+    if not check_data(soup):
+        raise NoDataException("Could not find ETF: {}".format(etf))
     
-    # Find Quotebox
+    ## Find Quotebox
     quotebox = soup.find("div", {"class": "quotebox"})
     
-    # Raise Error if no Price is Available
+    ## Raise Error if no Price is Available
     if quotebox is None:
         raise NoDataException("No price available")
     else:
         quotebox = quotebox.find("tr")
 
-    # Extract Current Price
+    ## Extract Current Price
     try:
         price = quotebox.find("td").get_text()
     except Exception:
@@ -176,11 +184,11 @@ def get_price(etf: str, exchange: str = "FSE", output: str = "dataframe"):
         
     price_float, currency = parse_price(price)
     
-    # Get Timestamp
+    ## Get Timestamp
     timestamp_str = quotebox.find("div", {"class": "quotebox-time"}).get_text().strip()
     timestamp = parse_timestamp(timestamp_str)
     
-    # Create Result Dict
+    ## Create Result Dict
     result = {
         "Price": price_float,
         "Currency": currency,
@@ -189,19 +197,19 @@ def get_price(etf: str, exchange: str = "FSE", output: str = "dataframe"):
         "Exchange": exchange
         }
     
-    # Convert to Pandas if wanted
+    ## Convert to Pandas if wanted
     if output == "dataframe":
         result = pd.DataFrame([result])
     
-    # Return Result
+    ## Return Result
     return result
     
 
 # Define Function to Search ETF
 def search_etf(etf: str, limit: int = -1):
     
-    # Get Search Result
+    ## Get Search Result
     result = search(term=etf, category="etf", limit=limit)
     
-    # Return Result
+    ## Return Result
     return result
