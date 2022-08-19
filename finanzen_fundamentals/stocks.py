@@ -27,11 +27,11 @@ warnings.simplefilter('once')
 
 # Define Function to Extract GuV/Bilanz from finanzen.net
 def get_fundamentals(stock: str, output: str = "dataframe"):
-    
+
     ## Parse User Input
     if output not in ["dataframe", "dict"]:
         raise ValueError("Please choose either 'dict' or 'dataframe' for input")
-    
+
     ## Convert name to lowercase and remove -aktie
     stock = stock.lower()
     if stock.endswith("-aktie"):
@@ -114,15 +114,15 @@ def get_fundamentals(stock: str, output: str = "dataframe"):
                 df_list.append(df_tmp)
         fundamentals_df = pd.concat(df_list)
         return fundamentals_df
-                
+
 
 # Define Function to Extract Estimates
 def get_estimates(stock: str, output: str = "dataframe"):
-    
+
     ## Check Input
     if output not in ["dataframe", "dict"]:
         raise ValueError("Please choose either 'dict' or 'dataframe' for input")
-    
+
     ## Convert Stock Name to Lowercase
     stock = stock.lower()
     if stock.endswith("-aktie"):
@@ -164,49 +164,49 @@ def get_estimates(stock: str, output: str = "dataframe"):
                                   })
             df_list.append(df_tmp)
         return pd.concat(df_list)
-    
-    
+
+
 ## Define Function to Get Current Price
 def get_price(stock: str, exchange: str = "FSE", output: str = "dataframe"):
-    
+
     ## Transform User Input
     output = output.lower()
     stock = stock.lower()
     exchange = exchange.upper()
-    
+
     ## Check User Input
     if exchange not in statics.exchanges:
         exchanges_str = ", ".join(statics.exchanges)
         raise ValueError("'exchange' must be either one of: " + exchanges_str)
-        
+
     if output not in ["dict", "dataframe"]:
         raise ValueError("Output should be either 'dict' or 'dataframe'")
-    
+
     ## Create URL
     url = f"https://www.finanzen.net/aktien/{stock}@stBoerse_{exchange}"
-    
+
     ## Make Soup
     soup = _make_soup(url)
 
     ## Check Data
     if not check_data(soup):
         raise NoDataException("Could not find stock: {}".format(stock))
-    
+
     ## Get Quotebox
-    quotebox = soup.find("div", {"class": "quotebox"})
-    
+    quotebox = soup.find("div", {"class": "snapshot__values"})
+
     ## Return if no Data
     if quotebox is None:
         raise NoDataException("No price available")
-    
+
     ## Get Current Price
-    price = quotebox.find("div", {"class": "col-xs-5"}).get_text()
+    price = quotebox.find("span", {"class": "snapshot__value-current"}).get_text()
     price_float, currency = parse_price(price)
-    
+
     ## Get Timestamp
-    timestamp = quotebox.find("div", {"class": "quotebox-time"}).get_text()
+    timestamp = soup.find("div", {"class": "snapshot__time"}).find("time")["datetime"]
     timestamp = parse_timestamp(timestamp)
-    
+
     ## Create Result Dict
     result = {
         "Price": price_float,
@@ -215,18 +215,18 @@ def get_price(stock: str, exchange: str = "FSE", output: str = "dataframe"):
         "Stock": stock,
         "Exchange": exchange
         }
-    
+
     ## Convert to Pandas if wanted
     if output == "dataframe":
         result = pd.DataFrame([result])
-    
+
     ## Return Result
     return result
 
 
 # Define Function to Search for Stocks
 def search_stock(stock: str, limit: int = -1):
-    
+
     ## Get Search Result
     result = search(term=stock, category="stock", limit=limit)
 
@@ -269,12 +269,12 @@ def get_parser(function, stock_name):
 
 
 def get_estimates_lxml(stock: str, results=[]):
-    
+
     # Raise DeprecationWarning
     warnings.warn("get_estimates_lxml() functionality now included in get_estimates().", 
                   DeprecationWarning)
-    
-    
+
+
     url = "https://www.finanzen.net/schaetzungen/" + stock
 
     xp_base_xpath = '//div[contains(@class, "box table-quotes")]//h1[contains(text(), "Schätzungen")]//..'
@@ -311,11 +311,11 @@ def get_estimates_lxml(stock: str, results=[]):
 
 
 def get_fundamentals_lxml(stock: str, results=[]):
-    
+
     # Raise DepreciationWarning
     warnings.warn("get_fundamentals_lxml() functionality now included in get_fundamentals().", 
                   DeprecationWarning)
-    
+
     url = "https://www.finanzen.net/bilanz_guv/" + stock
 
     tables = ["Die Aktie",
@@ -369,11 +369,11 @@ def get_fundamentals_lxml(stock: str, results=[]):
 
 
 def get_current_value_lxml(stock: str, exchange="TGT", results=[]):
-    
+
     # Raise DepreciationWarning
     warnings.warn("get_current_value_lxml() functionality now included in get_price().", 
                   DeprecationWarning)
-    
+
     data_columns = [
         "name",
         "wkn",

@@ -4,7 +4,6 @@
 import re
 from datetime import datetime
 from finanzen_fundamentals.exceptions import ParsingException
-from finanzen_fundamentals.scraper import _make_soup
 
 
 # Define Function to Extract Price and Currency
@@ -17,9 +16,18 @@ def parse_price(price_str: str):
 
 # Define Function to Parse Timestamp from Price
 def parse_timestamp(timestamp_str: str):
-    if ":" in timestamp_str: 
+    
+    if "T" in timestamp_str:
+        timestamp_format = "%Y-%m-%dT%H:%M:%S"
+        timestamp = datetime.strptime(timestamp_str, timestamp_format)
+    elif ":" in timestamp_str:
+        if "Uhr" in timestamp_str:
+            timestamp_str = timestamp_str.replace("Uhr", "").strip()
+            timestamp_format = "%H:%M"
+        else:
+            timestamp_format = "%H:%M:%S"
         now = datetime.now()
-        timestamp = datetime.strptime(timestamp_str, "%H:%M:%S")
+        timestamp = datetime.strptime(timestamp_str, timestamp_format)
         timestamp = timestamp.replace(year=now.year, month=now.month, day=now.day)
     elif "." in timestamp_str:
         if len(timestamp_str) == 8:

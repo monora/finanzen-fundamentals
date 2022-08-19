@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="finanzen-fundamentals", # Replace with your own username
-    version="0.3.1",
+    version="0.3.2",
     author="Joshua Hruzik",
     author_email="joshua.hruzik@gmail.com",
     description="API to fetch financial data from finanzen.net",
@@ -18,11 +18,10 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-	"Intended Audience :: Financial and Insurance Industry",
-	"Intended Audience :: Science/Research",
-	"Topic :: Office/Business :: Financial",
-	"Topic :: Office/Business :: Financial :: Investment"
-	
+        "Intended Audience :: Financial and Insurance Industry",
+        "Intended Audience :: Science/Research",
+        "Topic :: Office/Business :: Financial",
+        "Topic :: Office/Business :: Financial :: Investment"
     ],
     python_requires='>=3.6',
 )
