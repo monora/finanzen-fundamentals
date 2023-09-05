@@ -51,7 +51,7 @@ def get_fundamentals(stock: str, output="dataframe"):
     # Define Function to Parse Table
     def _parse_table(soup, signaler: str):
         table_dict = {}
-        table = soup.find("h2", text=re.compile(f".*{signaler}.*")).parent
+        table = soup.find("h2", string=re.compile(f".*{signaler}.*")).parent
         years = [int(x.get_text()) for x in table.find_all("th")[2:]]
         rows = table.find_all("tr")[1:]
         for row in rows:
@@ -135,7 +135,7 @@ def get_estimates(stock: str, output="dataframe"):
 
     # Parse Table containing Yearly Estimates
     table_dict = {}
-    table = soup.find("h1", text=re.compile("^Schätzungen")).parent
+    table = soup.find("h1", string=re.compile("^Schätzungen")).parent
     years = table.find_all("th")[1:]
     years = [x.get_text() for x in years]
     rows = table.find_all("tr")[1:]
