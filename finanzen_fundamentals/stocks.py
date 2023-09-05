@@ -51,11 +51,11 @@ def get_fundamentals(stock: str, output="dataframe"):
     # Define Function to Parse Table
     def _parse_table(soup, signaler: str):
         table_dict = {}
-        table = soup.find("h2", text=re.compile(signaler)).parent
+        table = soup.find("h2", text=re.compile(f".*{signaler}.*")).parent
         years = [int(x.get_text()) for x in table.find_all("th")[2:]]
         rows = table.find_all("tr")[1:]
         for row in rows:
-            name = row.find("td", {"class": "font-bold"}).get_text()
+            name = row.find("label").get_text()
             row_data = row.find_all("td")
             row_data = row_data[2:]
             row_data = [x.get_text() for x in row_data]
@@ -176,13 +176,16 @@ def search_stock(stock: str, limit: int = -1):
 
     # Define Function to Extract Results
     result_list = []
-    table_outer_div = soup.find("div", {"class": "table-responsive"})
-    table = table_outer_div.find("table", {"class": "table"})
+    table_outer_div = soup.find("div", {"class": "horizontal-scrolling"})
+    table = table_outer_div.find("table")
     rows = table.find_all("tr")
     for row in rows[1:]:
         cells = row.find_all("td")
         name = cells[0].get_text()
-        link = cells[0].find("a")["href"]
+        a = cells[0].find("a")
+        if a is None:
+            continue
+        link = a["href"]
         link = "https://www.finanzen.net" + link
         isin = cells[1].get_text()
         wkn = cells[2].get_text()
