@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="finanzen-fundamentals", # Replace with your own username
-    version="0.1.0",
+    version="0.3.4",
     author="Joshua Hruzik",
     author_email="joshua.hruzik@gmail.com",
     description="API to fetch stock data fundamentals from finanzen.net",
@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/robert-elles/finanzen-fundamentals",
     packages=setuptools.find_packages(),
-    install_requires=["requests", "bs4", "lxml", "numpy", "pandas", "cchardet"],
+    install_requires=["requests", "bs4", "lxml", "numpy", "pandas", "faust-cchardet"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
